@@ -94,7 +94,23 @@ async function bootstrap() {
     }
   });
 
-  // ─── Step 0: COI(Cross-Origin Isolation) 준비 확인 ───
+  // ─── Step 0: Secure Context 및 COI 준비 확인 ───
+  // Service Worker는 HTTPS 또는 localhost에서만 동작함.
+  // file:// 로 열면(Lively Wallpaper 로컬 파일 모드 등) SW 등록 불가 → 명확한 안내 표시.
+  if (!window.isSecureContext) {
+    updateLoadingStatus('webgpu', 'error', '보안 컨텍스트 없음');
+    updateLoadingStatus('gpu', 'error', '—');
+    showLoadingError(
+      '보안 연결 필요',
+      'file:// 또는 http:// 환경에서는 WebGPU를 사용할 수 없습니다.\n\n' +
+      'Lively Wallpaper 사용 중이라면:\n' +
+      '  Add Wallpaper → From URL 에 아래 주소를 입력하세요:\n\n' +
+      '  https://noran-banana.github.io/Faust_AI/\n\n' +
+      '(로컬 파일이 아닌 HTTPS URL로 로드해야 합니다.)'
+    );
+    return;
+  }
+
   // GitHub Pages는 서버 헤더를 못 쓰므로 coi-serviceworker.js가 COOP/COEP를 주입해야 함.
   // SW가 첫 등록 후 아직 페이지를 제어하지 않으면 → 1회 새로고침해서 제어권을 넘겨받음.
   // 이미 새로고침했거나(session 플래그), SW 없는 환경(Lively Wallpaper 등)이면 그냥 진행.
