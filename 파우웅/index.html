@@ -12,6 +12,7 @@
       rel="stylesheet"
     />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+    <script src="./coi-serviceworker.js"></script>
   </head>
   <body>
 
@@ -93,7 +94,7 @@
           
           <!-- 캐릭터 스탠딩 -->
           <div class="character-container" id="character-box">
-            <img src="/assets/Faust.png" alt="Faust" class="character-img" id="character-img" />
+            <img src="./assets/Faust.png" alt="Faust" class="character-img" id="character-img" />
           </div>
 
           <!-- AI 대답 상자 (배경 없이 텍스트 중앙 자막 정렬) -->
@@ -171,6 +172,6 @@
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>
