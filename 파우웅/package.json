@@ -1,0 +1,17 @@
+{
+  "name": "local-ai-chat",
+  "version": "1.0.0",
+  "description": "WebGPU 기반 완전 로컬 실행 AI 채팅 애플리케이션",
+  "type": "module",
+  "scripts": {
+    "dev": "node sync-assets.js && vite",
+    "build": "node sync-assets.js && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.79"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

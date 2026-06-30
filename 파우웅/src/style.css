@@ -1,0 +1,363 @@
+/* ============================================================
+   LocalMind AI — Limbus Company Premium UI Style
+   Background: faust_background_all.png (2500x1725)
+   ============================================================ */
+
+:root {
+  --limbus-gold:        #d48f22;
+  --limbus-gold-glow:   rgba(212,143,34,0.6);
+  --text-white:         #ffffff;
+  --text-gold:          #f3b755;
+  --text-gray:          #b0a8a0;
+  --font-limbus:        'Inter', 'Malgun Gothic', sans-serif;
+  --font-mono:          'JetBrains Mono', monospace;
+  --bg-ratio:           calc(2500 / 1725);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body {
+  width:100%; height:100%;
+  background:#000;
+  font-family: var(--font-limbus);
+  overflow:hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(212,143,34,0.3); border-radius:3px; }
+
+/* ── LOADING SCREEN ─────────────────────────────────────────── */
+.loading-screen {
+  position:fixed; inset:0; z-index:1000;
+  background:#050302;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  padding:24px;
+}
+.loading-content { width:100%; max-width:500px; display:flex; flex-direction:column; align-items:center; gap:30px; }
+.loading-logo { text-align:center; }
+.logo-text { font-size:2.2rem; font-weight:800; letter-spacing:0.15em; color:var(--text-gold); text-shadow:0 0 15px var(--limbus-gold-glow); }
+.loading-card { width:100%; background:rgba(18,14,12,0.95); border:1px solid rgba(139,92,26,0.35); border-radius:8px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.8); }
+.status-row { display:flex; align-items:center; gap:15px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.status-row:last-of-type { border-bottom:none; }
+.status-icon { width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+.status-icon.status-checking { color:var(--limbus-gold); }
+.status-icon.status-done     { color:#52c41a; }
+.status-icon.status-error    { color:#f5222d; }
+.status-info { display:flex; flex-direction:column; }
+.status-label { font-size:0.75rem; color:var(--text-gray); text-transform:uppercase; }
+.status-value { font-size:0.875rem; color:var(--text-white); font-weight:500; }
+.progress-container { display:none; width:100%; flex-direction:column; gap:8px; margin-top:15px; }
+.progress-container.visible { display:flex; }
+.progress-bar-track { width:100%; height:4px; background:#231c17; }
+.progress-bar-fill  { height:100%; width:0%; background:var(--limbus-gold); box-shadow:0 0 8px var(--limbus-gold); transition:width 0.2s ease; }
+.progress-info { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-gray); }
+#progress-text { color:var(--text-gold); font-weight:600; }
+.model-info-box { margin-top:15px; padding:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.05); }
+.model-info-row { display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.75rem; }
+.model-info-key { color:var(--text-gray); }
+.model-info-val { color:var(--text-gold); font-family:var(--font-mono); }
+.error-box { margin-top:15px; padding:15px; background:rgba(245,34,45,0.1); border:1px solid rgba(245,34,45,0.3); font-size:0.8rem; color:#ffccc7; }
+.spinner-small { width:14px; height:14px; border:2px solid rgba(212,143,34,0.2); border-top-color:var(--limbus-gold); border-radius:50%; animation:spin 0.7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── SCREEN WRAPPER ───────────────────────────────────────── */
+.screen-wrapper {
+  position:relative;
+  width:100vw; height:100vh;
+  background:#000;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+
+/* ── GAME CONTAINER (Aspect ratio fixed) ─────────────────── */
+.game-container {
+  position:relative;
+  width:100%;
+  max-height:100vh;
+  aspect-ratio: 2500 / 1725;
+  background-image: url('/assets/faust_background_all.png');
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  overflow:hidden;
+}
+
+@media (min-aspect-ratio: 2500/1725) {
+  .game-container {
+    width:auto;
+    height:100vh;
+  }
+}
+
+
+
+/* ── SCREEN VIEWPORT (모니터 스크린 영역 실측 맵핑) ───────── */
+.screen-viewport {
+  position:absolute;
+  left:8.0%;
+  top:5.8%;
+  width:84.0%;
+  height:57.9%;
+  overflow:hidden;
+  background:radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+}
+
+
+/* ── 캐릭터 ───────────────────────────────────────────────── */
+.character-container {
+  position:absolute;
+  left:50%; bottom:-5%;
+  transform:translateX(-50%);
+  width:auto; height:95%;
+  display:flex; align-items:flex-end; justify-content:center;
+  pointer-events:none; z-index:2;
+  transition:opacity 0.4s ease;
+}
+.character-img {
+  height:100%; width:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 0 12px rgba(0,0,0,0.7));
+}
+
+.limbus-logo-bg {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.015);
+  letter-spacing: 0.2em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+/* ── AI 답변 텍스트 자막창 (배경 투명, 각도 평행 조정) ─────── */
+.ai-response-box {
+  position:absolute;
+  left:13.5%;
+  bottom:-2.0%;
+  width:80.0%;
+  height:26.0%;
+  background:transparent;
+  border:none; box-shadow:none;
+  display:flex; align-items:center; justify-content:center;
+  z-index:5;
+  /* 모니터 스크린 경사와 평행하게 1.5도 기울임 */
+  transform:rotate(-1.5deg);
+}
+
+.messages-area {
+  width:100%; height:100%;
+  overflow:hidden;
+  display:flex; justify-content:center; align-items:center;
+}
+#messages-list {
+  display:flex; justify-content:center; align-items:center;
+  width:100%;
+}
+.message-item {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  width:100%; font-size:0.92rem; line-height:1.65;
+  animation:msgFadeIn 0.35s ease forwards;
+}
+@keyframes msgFadeIn {
+  from { opacity:0; transform:scale(0.98); }
+  to   { opacity:1; transform:scale(1); }
+}
+.message-item.user .msg-content {
+  color:var(--text-gold); font-weight:600; max-width:95%;
+  text-shadow:0 0 10px rgba(212,143,34,0.4);
+}
+.message-item.assistant .msg-content {
+  color:var(--text-white); font-weight:500; max-width:95%;
+  text-shadow:0 2px 6px rgba(0,0,0,0.95);
+}
+.msg-meta { display:none; }
+
+/* 마크다운 */
+.msg-content code { font-family:var(--font-mono); background:rgba(255,255,255,0.08); padding:2px 5px; border-radius:3px; font-size:0.85em; color:#ffab73; }
+.msg-content pre  { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:5px; overflow-x:auto; margin:6px 0; }
+.msg-content pre code { background:none; padding:0; color:#ffd2a6; }
+.msg-content strong { color:#ffc94d; }
+
+/* 스트리밍 커서 */
+.stream-cursor::after {
+  content:'█';
+  animation:cursorBlink 0.8s step-start infinite;
+  color:var(--limbus-gold); margin-left:2px;
+}
+@keyframes cursorBlink { 50% { opacity:0; } }
+
+/* 타이핑 인디케이터 */
+.typing-indicator { display:flex; align-items:center; gap:5px; justify-content:center; }
+.typing-indicator .dot { width:7px; height:7px; background:var(--limbus-gold); border-radius:50%; animation:bounceDot 1.4s infinite ease-in-out both; }
+.typing-indicator .dot:nth-child(1) { animation-delay:-0.32s; }
+.typing-indicator .dot:nth-child(2) { animation-delay:-0.16s; }
+@keyframes bounceDot { 0%,80%,100%{ transform:scale(0); } 40%{ transform:scale(1.0); } }
+
+/* ── 챗박스 입력창 영역 (실측 좌표 및 안쪽 여백 가두기) ────── */
+.chat-input-wrapper {
+  position:absolute;
+  left:1.92%;
+  top:77.33%;
+  width:49.48%;
+  height:20.81%;
+  z-index:10;
+  /* 테두리 안쪽 골짜기에 글자가 가두어지도록 패딩 설정 */
+  padding:30px 45px;
+}
+
+.user-input {
+  width:100%; height:100%;
+  background:transparent;
+  border:none; outline:none;
+  color:#ffffff;
+  font-family:var(--font-limbus);
+  font-size:clamp(0.8rem, 1.2vw, 1.05rem);
+  line-height:1.55;
+  resize:none;
+  caret-color:var(--limbus-gold);
+  position:relative;
+  z-index:2;
+}
+.user-input::placeholder { color:rgba(176,168,160,0.35); }
+.user-input:disabled { cursor:not-allowed; opacity:0.4; }
+
+/* 챗박스 크롭 주황 테두리 오버레이 (자식 크기에 딱 맞춰 덮음) */
+.chatbox-hover-overlay {
+  position:absolute;
+  inset:0;
+  width:100%; height:100%;
+  background-image:url('/assets/asset_2-2_cropped.png');
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.15s ease;
+  z-index:1;
+}
+
+/* 호버/포커스 시 주황 테두리 노출 */
+.chat-input-wrapper:hover .chatbox-hover-overlay,
+.chat-input-wrapper:focus-within .chatbox-hover-overlay {
+  opacity:1;
+}
+
+/* ── 전송 버튼 영역 (실측 좌표 맵핑) ───────────────────────── */
+.send-btn-wrapper {
+  position:absolute;
+  left:53.24%;
+  top:81.22%;
+  width:12.48%;
+  height:13.51%;
+  z-index:10;
+}
+
+.send-btn {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  background-image:url('/assets/asset_3.png');
+  background-size:contain;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-color:transparent;
+  border:none; cursor:pointer; outline:none;
+  transition:transform 0.1s ease;
+  z-index:1;
+}
+.send-btn:active:not(:disabled) { transform:scale(0.95); }
+.send-btn:disabled { cursor:not-allowed; opacity:0.4; }
+
+.send-btn-hover-overlay {
+  position:absolute;
+  left:-8%; top:-8%;
+  width:116%; height:116%;
+  background-image:url('/assets/asset_3-2.png');
+  background-size:contain;
+  background-position:center;
+  background-repeat:no-repeat;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.15s ease;
+  z-index:20;
+}
+
+/* 호버 시 주황색 전송버튼 글로우 활성화 */
+.send-btn-wrapper:hover .send-btn-hover-overlay {
+  opacity:1;
+}
+
+/* ── 우측 다이얼 투명 단축키 오버레이 ───────────────────────── */
+.ctrl-overlay-panel { position:absolute; inset:0; pointer-events:none; z-index:9; }
+.ctrl-btn {
+  position:absolute; pointer-events:auto;
+  background:transparent; border:none;
+  cursor:pointer; outline:none; border-radius:50%;
+}
+.ctrl-btn::after {
+  content:''; position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(circle, var(--limbus-gold-glow) 0%, transparent 70%);
+  opacity:0; transition:opacity 0.2s ease;
+}
+.ctrl-btn:hover::after { opacity:1; }
+
+.ctrl-btn.dial-1 { right:3.5%; top:17%; width:5%; aspect-ratio:1; }
+.ctrl-btn.dial-2 { right:3.5%; top:27%; width:5%; aspect-ratio:1; }
+.ctrl-btn.dial-3 { right:3.5%; top:37%; width:5%; aspect-ratio:1; }
+.ctrl-btn.dial-4 { right:3.5%; top:47%; width:5%; aspect-ratio:1; }
+.ctrl-btn.dial-5 { right:3.5%; top:57%; width:5%; aspect-ratio:1; }
+.ctrl-btn.dial-6 { right:3.5%; top:67%; width:5%; aspect-ratio:1; }
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+.sidebar {
+  position:fixed; top:0; right:-360px; width:340px; height:100vh;
+  background:rgba(10,8,8,0.96); border-left:2px solid rgba(139,92,26,0.35);
+  box-shadow:-10px 0 30px rgba(0,0,0,0.85);
+  display:flex; flex-direction:column; z-index:100;
+  transition:right 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.sidebar.open { right:0; }
+.sidebar-header { padding:24px 20px; border-bottom:1px solid rgba(139,92,26,0.35); display:flex; justify-content:space-between; align-items:center; }
+.sidebar-logo-text { font-size:1rem; font-weight:700; color:var(--text-gold); letter-spacing:0.05em; }
+.sidebar-toggle { background:transparent; border:none; color:var(--text-gray); cursor:pointer; font-size:1.1rem; }
+.sidebar-section { padding:20px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; gap:12px; }
+.sidebar-section-title { font-size:0.75rem; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
+.gpu-status-card, .model-badge { background:rgba(255,255,255,0.02); border:1px solid rgba(139,92,26,0.35); padding:10px 14px; border-radius:4px; }
+.gpu-name, .model-badge-name { font-size:0.85rem; font-family:var(--font-mono); color:var(--text-gold); }
+.system-prompt-area { width:100%; background:rgba(0,0,0,0.6); border:1px solid rgba(139,92,26,0.35); color:#fff; padding:10px; font-size:0.8rem; line-height:1.4; resize:none; outline:none; font-family:var(--font-limbus); }
+.system-prompt-area:focus { border-color:var(--limbus-gold); }
+.btn-secondary, .btn-danger { width:100%; padding:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(139,92,26,0.35); color:var(--text-gray); font-size:0.85rem; cursor:pointer; transition:all 0.2s ease; font-weight:500; }
+.btn-secondary:hover { background:rgba(212,143,34,0.1); border-color:var(--limbus-gold); color:var(--text-gold); }
+.btn-danger { color:#ff7875; border-color:rgba(245,34,45,0.2); }
+.btn-danger:hover { background:rgba(245,34,45,0.1); border-color:#f5222d; color:#ff4d4f; }
+.sidebar-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(2px); z-index:99; display:none; }
+.sidebar-overlay.visible { display:block; }
+
+/* ── TOOLTIP ────────────────────────────────────────────────── */
+.limbus-tooltip {
+  position:absolute; right:11%; background:rgba(10,8,8,0.95);
+  border:1px solid var(--limbus-gold); color:var(--text-gold);
+  padding:5px 12px; font-size:0.7rem; font-weight:600; letter-spacing:0.05em;
+  pointer-events:none; opacity:0; transition:opacity 0.2s ease; z-index:50;
+  box-shadow:0 5px 15px rgba(0,0,0,0.6); white-space:nowrap;
+}
+
+/* ── TOAST ──────────────────────────────────────────────────── */
+.toast {
+  position:fixed; top:24px; left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  background:rgba(18,14,12,0.96); border:1px solid var(--limbus-gold); border-radius:4px;
+  padding:10px 26px; color:var(--text-gold); font-size:0.875rem; font-weight:500;
+  z-index:10000; opacity:0; transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+  pointer-events:none; box-shadow:0 8px 24px rgba(0,0,0,0.8);
+}
+.toast.visible { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.success { border-color:#52c41a; color:#52c41a; }
+.toast.error   { border-color:#f5222d; color:#f5222d; }
+
+/* ── LOADING FADE OUT ───────────────────────────────────────── */
+.loading-screen.fade-out { animation:screenFadeOut 0.6s ease forwards; }
+@keyframes screenFadeOut { to { opacity:0; pointer-events:none; } }

@@ -1,0 +1,5 @@
+# LocalMind AI — .gitignore
+node_modules/
+dist/
+.DS_Store
+*.log

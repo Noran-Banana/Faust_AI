@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="WebGPU 기반 완전 로컬 실행 AI 비서 파우스트 - Limbus Company 테마" />
+    <title>Faust AI — Limbus Company</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+  </head>
+  <body>
+
+    <!-- ==================== LOADING SCREEN ==================== -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-logo">
+          <h1 class="logo-text">FAUST AI</h1>
+          <p style="font-size:0.75rem; color:var(--text-gray); letter-spacing:0.2em; margin-top:5px;">DECISION ENGINE v1.0.3</p>
+        </div>
+
+        <div class="loading-card">
+          <div class="status-row" id="status-webgpu">
+            <div class="status-icon status-checking" id="icon-webgpu"><div class="spinner-small"></div></div>
+            <div class="status-info">
+              <span class="status-label">WebGPU SUPPORT CHECK</span>
+              <span class="status-value" id="val-webgpu">연산 모듈 점검 중...</span>
+            </div>
+          </div>
+          <div class="status-row" id="status-gpu">
+            <div class="status-icon status-checking" id="icon-gpu"><div class="spinner-small"></div></div>
+            <div class="status-info">
+              <span class="status-label">ACCELERATION HARDWARE</span>
+              <span class="status-value" id="val-gpu">연결망 감지 중...</span>
+            </div>
+          </div>
+          <div class="status-row" id="status-model">
+            <div class="status-icon status-waiting" id="icon-model">⏱️</div>
+            <div class="status-info">
+              <span class="status-label">KNOWLEDGE BASE (LLM)</span>
+              <span class="status-value" id="val-model">대기 상태</span>
+            </div>
+          </div>
+
+          <div class="progress-container" id="progress-container">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-info">
+              <span id="progress-text">0%</span>
+              <span id="progress-detail">지식 라이브러리 적재 준비 중...</span>
+            </div>
+          </div>
+
+          <div class="model-info-box" id="model-info-box">
+            <div class="model-info-row">
+              <span class="model-info-key">MODEL ID</span>
+              <span class="model-info-val" id="info-model-name">Llama-3.1-8B-Instruct</span>
+            </div>
+            <div class="model-info-row">
+              <span class="model-info-key">QUANTIZATION</span>
+              <span class="model-info-val">Q4F32_1 (4-bit)</span>
+            </div>
+            <div class="model-info-row">
+              <span class="model-info-key">ENGINE BACKEND</span>
+              <span class="model-info-val">WebLLM + WebGPU</span>
+            </div>
+          </div>
+          
+          <button id="loading-delete-cache-btn" class="btn-danger" style="margin-top:15px; font-size:0.75rem; padding:10px; border-radius:4px; width:100%; border:1px solid rgba(245, 34, 45, 0.3);">
+            로컬 저장소 모델 파일 완전 소거 (~4GB)
+          </button>
+        </div>
+
+        <div class="error-box" id="error-box" style="display:none;">
+          <p class="error-title" id="error-title" style="font-weight:700; color:#f5222d; margin-bottom:5px;">SYSTEM ERR</p>
+          <p class="error-desc" id="error-desc" style="line-height:1.4; white-space:pre-wrap;"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MAIN APP ==================== -->
+    <div class="screen-wrapper">
+      <div class="game-container" id="app" style="display:none;">
+
+        <!-- ─ 중앙 모니터 스크린 뷰포트 ─ -->
+        <div class="screen-viewport">
+          <div class="limbus-logo-bg">LIMBUS</div>
+          
+          <!-- 캐릭터 스탠딩 -->
+          <div class="character-container" id="character-box">
+            <img src="/assets/Faust.png" alt="Faust" class="character-img" id="character-img" />
+          </div>
+
+          <!-- AI 대답 상자 (배경 없이 텍스트 중앙 자막 정렬) -->
+          <div class="ai-response-box" id="ai-response-box">
+            <div class="messages-area" id="messages-area">
+              <div id="messages-list"></div>
+              <div class="typing-indicator" id="typing-indicator" style="display:none;">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─ 챗박스: 텍스트 입력 영역 (순수 투명) ─ -->
+        <div class="chat-input-wrapper" id="chat-input-wrapper">
+          <textarea
+            id="user-input"
+            class="user-input"
+            placeholder="파우스트에게 전달할 내용을 입력하십시오..."
+            rows="2"
+            disabled
+          ></textarea>
+          <!-- 호버 시 위에 씌워지는 크롭된 주황색 테두리 오버레이 -->
+          <div class="chatbox-hover-overlay" id="chatbox-hover-overlay"></div>
+        </div>
+
+        <!-- ─ 전송 버튼 (asset_3.png 기본 노출 / 호버 시 asset_3-2 씌움) ─ -->
+        <div class="send-btn-wrapper" id="send-btn-wrapper">
+          <button class="send-btn" id="send-btn" disabled aria-label="전송"></button>
+          <div class="send-btn-hover-overlay" id="send-btn-hover-overlay"></div>
+        </div>
+
+        <!-- ─ 우측 다이얼 투명 오버레이 버튼 ─ -->
+        <div class="ctrl-overlay-panel">
+          <button class="ctrl-btn dial-1" id="ctrl-clear-chat"   title="대화 초기화"></button>
+          <button class="ctrl-btn dial-2" id="ctrl-export-chat"  title="대화 내보내기"></button>
+          <button class="ctrl-btn dial-3" id="ctrl-open-sidebar" title="시스템 설정"></button>
+          <button class="ctrl-btn dial-4" id="ctrl-toggle-char"  title="캐릭터 표시 토글"></button>
+          <button class="ctrl-btn dial-5" id="ctrl-model-info"   title="GPU/엔진 정보"></button>
+          <button class="ctrl-btn dial-6" id="ctrl-delete-cache" title="로컬 모델 삭제"></button>
+        </div>
+
+        <div class="limbus-tooltip" id="limbus-tooltip"></div>
+      </div>
+    </div>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-logo-text">FAUST CONTROL PANEL</span>
+        <button class="sidebar-toggle" id="sidebar-close" aria-label="닫기">✕</button>
+      </div>
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">GPU ACCELERATION</h3>
+        <div class="gpu-status-card">
+          <div class="gpu-name" id="gpu-name-sidebar">Checking...</div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">ACTIVE MODEL</h3>
+        <div class="model-badge">
+          <span class="model-badge-name" id="sidebar-model-name">Llama-3.1-8B</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">SYSTEM PROMPT</h3>
+        <textarea id="system-prompt" class="system-prompt-area" rows="6" placeholder="시스템 명령을 적재하세요..."></textarea>
+        <button class="btn-secondary" id="save-system-prompt" style="margin-top:8px;">저장 및 적용</button>
+      </div>
+      <div class="sidebar-section" style="margin-top:auto;">
+        <button class="btn-danger"    id="clear-chat-btn"  style="margin-bottom:8px;">대화 데이터 소거</button>
+        <button class="btn-secondary" id="export-chat-btn">로그 데이터 내보내기</button>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
