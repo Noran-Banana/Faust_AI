@@ -94,6 +94,23 @@ async function bootstrap() {
     }
   });
 
+  // ─── Step 0: COI(Cross-Origin Isolation) 준비 확인 ───
+  // GitHub Pages는 서버 헤더를 못 쓰므로 coi-serviceworker.js가 COOP/COEP를 주입해야 함.
+  // SW가 첫 등록 후 아직 페이지를 제어하지 않으면 → 1회 새로고침해서 제어권을 넘겨받음.
+  // 이미 새로고침했거나(session 플래그), SW 없는 환경(Lively Wallpaper 등)이면 그냥 진행.
+  if (!window.crossOriginIsolated && 'serviceWorker' in navigator) {
+    const alreadyReloaded = sessionStorage.getItem('_coi_reloaded');
+    if (!alreadyReloaded) {
+      const swReg = await navigator.serviceWorker.getRegistration();
+      if (swReg && swReg.active && !navigator.serviceWorker.controller) {
+        // SW는 등록됐지만 아직 제어권이 없음 → 새로고침으로 활성화
+        sessionStorage.setItem('_coi_reloaded', '1');
+        window.location.reload();
+        return;
+      }
+    }
+  }
+
   // ─── Step 1: WebGPU 지원 점검 ───
   updateLoadingStatus('webgpu', 'loading', '장치 가용성 진단 중...');
 

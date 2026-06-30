@@ -12,6 +12,17 @@
       rel="stylesheet"
     />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+    <!-- COI Service Worker: GitHub Pages에서 COOP/COEP 헤더를 주입해 WebGPU를 활성화 -->
+    <script>
+      // Lively Wallpaper(CEF/WebView2) 및 Chrome 모두에서 호환성 높은 credentialless 모드 사용
+      window.coi = {
+        shouldRegister: () => true,
+        shouldDeregister: () => false,
+        coepCredentialless: () => true,   // require-corp 대신 credentialless 사용
+        doReload: () => window.location.reload(),
+        quiet: false,
+      };
+    </script>
     <script src="./coi-serviceworker.js"></script>
   </head>
   <body>
